@@ -1,6 +1,6 @@
 /**
  * Supabase Tag Builder Word Taskpane Add-in
- * Wilson & Associates Template System
+ * Migration Matters Template System
  */
 
 // SUPABASE CONFIGURATION (Pre-filled from project settings)
