@@ -63,6 +63,16 @@ const apiSchema = {
     "properties": {
       "id": {}, "name": {}, "email": {}, "phone": {}, "message": {}, "lead_type": {}, "status": {}, "invited_user_id": {}, "invited_at": {}, "internal_notes": {}, "created_at": {}, "updated_at": {}
     }
+  },
+  "Signature": {
+    "properties": {
+      "signature:Applicant": {},
+      "signature:Sponsor": {},
+      "signature:Agent": {},
+      "date:Applicant": {},
+      "date:Sponsor": {},
+      "date:Agent": {}
+    }
   }
 };
 
@@ -185,7 +195,15 @@ function populateColumns(columns) {
   let optionsHtml = '<option value="">-- Select a Column (Field) --</option>';
   
   columns.forEach(col => {
-    optionsHtml += `<option value="${col}">${col}</option>`;
+    let label = col;
+    if (col === "signature:Applicant") label = "Applicant Signature";
+    else if (col === "signature:Sponsor") label = "Sponsor Signature";
+    else if (col === "signature:Agent") label = "Agent Signature";
+    else if (col === "date:Applicant") label = "Applicant Date Signed";
+    else if (col === "date:Sponsor") label = "Sponsor Date Signed";
+    else if (col === "date:Agent") label = "Agent Date Signed";
+
+    optionsHtml += `<option value="${col}">${label}</option>`;
   });
   
   columnSelect.innerHTML = optionsHtml;
@@ -218,7 +236,8 @@ function updatePreview(table, col) {
   const previewBox = document.getElementById("tagPreview");
   
   if (table && col) {
-    previewBox.innerHTML = `{{${table}.${col}}}`;
+    const tagText = table === "Signature" ? `{{${col}}}` : `{{${table}.${col}}}`;
+    previewBox.innerHTML = tagText;
     previewBox.classList.remove("preview-placeholder");
   } else {
     previewBox.innerHTML = '<span class="preview-placeholder">No field selected</span>';
@@ -288,7 +307,7 @@ async function insertTagIntoDocument() {
   
   if (!table || !col) return;
   
-  const tagText = `{{${table}.${col}}}`;
+  const tagText = table === "Signature" ? `{{${col}}}` : `{{${table}.${col}}}`;
 
   try {
     // Use OfficeJS Word API to run a batch against the active document context
