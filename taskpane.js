@@ -15,9 +15,13 @@ let currentColumns = [];
 // Initialize Office Add-in
 Office.onReady((info) => {
   if (info.host === Office.HostType.Word) {
-    document.addEventListener("DOMContentLoaded", () => {
+    if (document.readyState === "complete" || document.readyState === "interactive") {
       initApp();
-    });
+    } else {
+      document.addEventListener("DOMContentLoaded", () => {
+        initApp();
+      });
+    }
   }
 });
 
