@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Supabase Tag Builder</title>
+  
+  <!-- Office.js and Supabase Client JS CDNs -->
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    /* Styling for a high-quality Fluent-inspired look */
+    :root {
+      --primary: #0078d4;
+      --primary-hover: #106ebe;
+      --bg: #f3f2f1;
+      --surface: #ffffff;
+      --text: #323130;
+      --text-muted: #605e5c;
+      --border: #edebe9;
+      --accent-green: #107c41;
+      --accent-green-bg: #dff6dd;
+      --accent-red: #a80000;
+      --accent-red-bg: #fde7e9;
+      --radius: 4px;
+      --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.4;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header styling */
+    .header {
+      background-color: var(--surface);
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .title svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Connection status */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 12px;
+      margin-top: 10px;
+    }
+
+    .status-badge.connected {
+      background-color: var(--accent-green-bg);
+      color: var(--accent-green);
+    }
+
+    .status-badge.error {
+      background-color: var(--accent-red-bg);
+      color: var(--accent-red);
+    }
+
+    .status-badge.connecting {
+      background-color: #fff4ce;
+      color: #795b00;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    /* Main Container */
+    .container {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background-color: var(--surface);
+      border-radius: var(--radius);
+      padding: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      outline: none;
+      background-color: var(--surface);
+      color: var(--text);
+      transition: border-color 0.15s ease-in-out;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--primary);
+    }
+
+    /* Preview section */
+    .preview-box {
+      background-color: #faf9f8;
+      border: 1px dashed var(--border);
+      padding: 10px;
+      border-radius: var(--radius);
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      color: var(--primary);
+      text-align: center;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      word-break: break-all;
+    }
+
+    .preview-placeholder {
+      color: var(--text-muted);
+      font-style: italic;
+      font-family: var(--font);
+    }
+
+    /* Insert Button */
+    .btn {
+      width: 100%;
+      background-color: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background-color 0.15s ease;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn:disabled {
+      background-color: #c8c6c4;
+      color: #a19f9d;
+      cursor: not-allowed;
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 16px;
+      right: 16px;
+      background-color: #323130;
+      color: #ffffff;
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 0.95;
+      transform: translateY(0);
+    }
+
+    /* Search/Filter styles */
+    .search-wrapper {
+      position: relative;
+    }
+
+    .search-wrapper input {
+      padding-right: 28px;
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="title">
+      <!-- Database/Tag Icon -->
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+      Supabase Tag Builder
+    </div>
+    <div class="subtitle">Wilson &amp; Associates Template System</div>
+    
+    <div id="connectionStatus" class="status-badge connecting">
+      <div class="status-dot"></div>
+      <span id="statusText">Connecting...</span>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="container">
+    <div class="card">
+      <!-- Search Filter -->
+      <div class="form-group">
+        <label for="searchFilter">Quick Filter</label>
+        <div class="search-wrapper">
+          <input type="text" id="searchFilter" placeholder="Search tables or columns..." disabled>
+          <button id="searchClear" class="search-clear" type="button">&times;</button>
+        </div>
+      </div>
+
+      <!-- Table Selection -->
+      <div class="form-group">
+        <label for="tableSelect">Select Table / View</label>
+        <select id="tableSelect" disabled>
+          <option value="">Loading tables...</option>
+        </select>
+      </div>
+
+      <!-- Column Selection -->
+      <div class="form-group">
+        <label for="columnSelect">Select Column (Field)</label>
+        <select id="columnSelect" disabled>
+          <option value="">Choose a table first...</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Preview Box -->
+    <div class="card" style="margin-top: -8px;">
+      <label>Tag Preview</label>
+      <div id="tagPreview" class="preview-box">
+        <span class="preview-placeholder">No field selected</span>
+      </div>
+    </div>
+
+    <!-- Action Button -->
+    <button id="insertBtn" class="btn" disabled>
+      <svg style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+      </svg>
+      Insert Tag
+    </button>
+  </div>
+
+  <!-- Toast Toast -->
+  <div id="toast" class="toast">Tag inserted successfully!</div>
+
+  <!-- Load script logic -->
+  <script src="taskpane.js"></script>
+</body>
+</html>
